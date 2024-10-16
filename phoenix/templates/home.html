@@ -1,0 +1,664 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Rc Beauty</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script defer src="{% static 'script.js' %}"></script>
+</head>
+<body>
+    <header class="classi-header">
+        <div class="header-logo">
+            <img src="{% static 'logo.png' %}" alt="Logo" class="logo">
+            <span style="font-weight:bold;">Rc Beauty</span>
+        </div>
+        <a href="{% url 'blog_posts' %}" class="footer-item" style="position: absolute; right: 2%; color: var(--color-green);">
+            <i class="fas fa-blog"></i>
+            <span style="font-weight:bold;">Blog</span>
+        </a>
+    </header>
+    <header class="full-header" id="full-header">
+    <div class="footer-container">
+        <a href="{% url 'home' %}" class="header-item">
+            <div class="header-logo">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="logo">
+            </div>
+            <span style="font-weight:bold;">Rc Beauty</span>
+        </a>
+        <a href="{% url 'admin_pannele' %}" style="display: none;" id="hidden-link"></a>
+
+        <a href="{% url 'produits_par_categorie' %}" class="header-item">
+                <i class="fas fa-store"></i>
+                <span>Boutique</span>
+        </a>
+        <a href="{% url 'propos' %}" class="header-item">
+            <i class="fas fa-info"></i>
+            <span>À propos</span>
+        </a>
+        <a href="{% url 'afficher_panier' %}" class="header-item">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">{{ nombre_produits_panier }}</span>
+            <span>Panier</span>
+        </a>
+        <a href="{% url 'blog_posts' %}" class="header-item">
+            <i class="fas fa-blog"></i>
+            <span>Blog</span>
+        </a>
+        <a href="{% url 'afficher_profil' %}" class="header-item">
+            <i class="fas fa-user"></i>
+            <span>Compte</span>
+        </a>
+    </div>
+</header>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const fullHeader = document.getElementById('full-header');
+        const hiddenLink = document.getElementById('hidden-link');
+
+        let clickCount = 0;
+        let lastClickTime = 0;
+
+        fullHeader.addEventListener('click', function(event) {
+            const currentTime = new Date().getTime();
+            const timeDiff = (currentTime - lastClickTime) / 1000; // Temps écoulé en secondes
+
+            if (timeDiff > 1) {
+                clickCount = 0;  // Réinitialiser le compteur si délai > 1 seconde
+            }
+
+            lastClickTime = currentTime;
+            clickCount += 1;
+
+            if (clickCount >= 4) {
+                event.preventDefault(); // Empêcher la redirection normale au 4ème clic
+
+                // Demander le mot de passe
+                const password = prompt("Entrez le mot de passe pour accéder au lien caché:");
+
+                // Vérifier le mot de passe
+                if (password === "RcBeauty@@2024") {
+                    hiddenLink.style.display = 'inline';  // Rendre le lien caché visible
+                    window.location.href = hiddenLink.href;  // Rediriger vers le lien caché
+                } else {
+                    alert("Mot de passe incorrect. Accès refusé.");
+                }
+
+                clickCount = 0;  // Réinitialiser le compteur après l'authentification
+            }
+        });
+    });
+</script>
+
+
+    <main style="margin-bottom: 85px;">
+        <p class="Annonce" style="font-family:franklin; font-size:20px; color:green;" style="margin-top:100px;">
+    <a style="color:blue; text-decoration:none;" href="{% url 'signup' %}">Inscrivez-vous</a> pour que nous soyons plus proche de vous...
+</p>
+        <!-- Bannière avec texte survolant -->
+        <div class="banner">
+            <img src="{% static 'banner.jpeg' %}" alt="Bannière" class="banner-image">
+            <div class="banner-text" style="color: white;">
+                <h1>  Chez Rc Beauty,</h1>
+                  Nous allions innovation et bien-être. Nous proposons des cosmétiques de qualité, adaptés à tous les types de peau, ainsi que des gadgets de confort comme des diffuseurs d’huiles essentielles. Découvrez un univers où beauté et sérénité se rencontrent !</p>
+            </div>
+        </div>
+
+        <div class="categories">
+            <h2>Nos Produits</h2>
+
+            <!-- Slider pour les produits -->
+            <div class="category-slider">
+                {% for produit in derniers_produits %}
+                <div class="product">
+                    <a href="{% url 'produit_detail' produit.id %}">
+                        <img src="{{ produit.image.url }}" alt="{{ produit.nom }}">
+                         <span class="product-name"style="font-weight:bold;color:black;">{{ produit.nom }}</span>
+                            <span class="product-name" style="color:black;">
+                                {{ produit.description|slice:":60" }}...
+                            </span>
+                            <br>
+                        <span class="product-price">fcfa {{ produit.prix_commercial }}</span>
+
+                    </a>
+                    <a href="{% url 'produits_par_categorie'%}" class="add-to-cart"><i class="fas fa-store"></i> Boutique</a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <h2>Nos Articles de Blog</h2>
+
+            <!-- Slider pour les articles de blog -->
+            <div class="category-slider">
+                {% for article in derniers_articles %}
+                <div class="product">
+                    <a href="{% url 'blog_detail' article.id %}">
+                        <img src="{{ article.image.url }}" alt="{{ article.titre }}">
+                        <span style="color: #13f850;" class="product-name">{{ article.titre }}</span>
+                        <p style="color: #000;" class="product-description">{{ article.description|slice:":50" }}...</p>
+                    </a>
+                    <a  href="{% url 'blog_posts' %}" class="add-to-cart" ><i class="fas fa-book-open"></i>Blog</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+
+        <!-- contact.html -->
+<section class="contact-form-section">
+    <h2 class="title" style="color: var(--color-green);">Contactez-nous</h2>
+    <form class="contact-form" action="{% url 'contact' %}" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="full-name">Nom complet</label>
+            <input type="text" id="full-name" name="full_name" placeholder="Votre nom complet" required>
+        </div>
+        <div class="form-group">
+            <label for="whatsapp-number">Numéro WhatsApp</label>
+            <input type="tel" id="whatsapp-number" name="whatsapp_number" placeholder="Votre numéro WhatsApp" required>
+        </div>
+        <div class="form-group">
+            <label for="message">Message ou suggestion</label>
+            <textarea id="message" name="message" rows="5" placeholder="Votre message ou suggestion" required></textarea>
+        </div>
+        <button type="submit" class="submit-button">Envoyer</button>
+    </form>
+</section>
+
+
+<section class="reviews-section">
+    <h2 class="title" style="color: var(--color-green);">Avis de nos clients</h2>
+    {% for avis in avis_list %}
+        <div class="review">
+            <img src="{{ avis.profil.photo.url }}" alt="Avatar Client">  <!-- Utilisez un avatar par défaut si nécessaire -->
+            <blockquote>
+                "{{ avis.commentaire }}"
+            </blockquote>
+            <p class="review-author" style="color: var(--color-green);">- {{ avis.profil.nom }} {{ avis.profil.prenom }}</p>
+        </div>
+    {% empty %}
+        <p>Aucun avis pour le moment.</p>
+    {% endfor %}
+</section>
+
+    </main>
+    <!-- Formulaire de Contact -->
+
+
+    <footer>
+        <div class="footer-container">
+            <a href="{% url 'propos' %}" class="footer-item">
+                <i class="fas fa-info"></i>
+                <span>à propos</span>
+            </a>
+            <a href="{% url 'produits_par_categorie' %}" class="footer-item">
+                <i class="fas fa-store"></i>
+                <span>Boutique</span>
+            </a>
+            <a href="{% url 'afficher_panier' %}" class="footer-item">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" style="color: red; margin: 0 ; padding: 0; font-weight: 800; position: absolute; top: 2%; font-size: 16px;">{{ nombre_produits_panier }}</span>
+                <span>Panier</span>
+            </a>
+            <a href="{% url 'afficher_profil' %}" class="footer-item">
+                <i class="fas fa-user"></i>
+                <span>Compte</span>
+            </a>
+        </div>
+    </footer>
+</body>
+</html>
+<style>
+:root {
+    --color-green: #e6bd49;
+    --color-border:  #010101;
+    --color-black: #010101;
+    --banner-text-color:  #010101;
+    --banner-overlay-color: rgba(0, 0, 0, 0.5);
+    --footer-bg-color: #000;
+    --footer-text-color: #fff;
+} 
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+    color: var(--color-black);
+}
+
+a{
+    text-decoration: none;
+    color: var(--banner-text-color);
+}
+
+header {
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+}
+
+.title{
+    color: var(--color-green);
+}
+
+.header-logo .logo {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background-color: var(--banner-text-color);
+}
+
+.header-logo .company-name {
+    font-size: 18px;
+    margin-left: 10px;
+    font-weight: bold;
+}
+
+main {
+    padding: 10px;
+    overflow-y: auto;
+    height: calc(100vh - 120px);
+}
+
+.banner {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    margin-bottom: 20px;
+}
+
+.banner-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.banner-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: var(--banner-text-color);
+    background-color: var(--banner-overlay-color);
+    padding: 10px;
+    border-radius: 5px;
+    width: 80%;
+}
+
+.banner-text h1 {
+    font-size: 20px;
+    margin: 0;
+}
+
+.banner-text p {
+    font-size: 14px;
+    margin: 5px 0 0;
+}
+
+.categories h2 {
+    color: var(--color-green);
+    font-weight: bold;
+}
+
+.category-slider {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+}
+
+.product {
+    width: 40%;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    background-color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    flex-shrink: 0;
+}
+
+.product img {
+    width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.product-name {
+    display: block;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.product-price {
+    font-size: 16px;
+    color: var(--color-black);
+    margin: 5px 0;
+}
+
+.add-to-cart {
+    background-color: var(--color-green);
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+}
+
+footer {
+    position: fixed;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    background-color: var(--color-green);
+    border-radius: 5px;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-around;
+    color: var(--footer-text-color);
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.footer-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-black);
+}
+
+.footer-item i {
+    font-size: 20px;
+}
+
+.footer-item span {
+    font-size: 10px;
+    margin-top: 5px;
+}
+
+
+
+.contact-form-section {
+    padding: 2rem;
+    background-color: var(--color-border);
+    margin-top: 3rem;
+    text-align: center;
+}
+
+.contact-form-section h2 {
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    color: var(--color-black);
+}
+
+.contact-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: var(--color-black);
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.submit-button {
+    background-color: var(--color-green);
+    color: var(--banner-text-color);
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: var(--color-black);
+    color: var(--footer-text-color);
+}
+
+.reviews-section {
+    padding: 3rem 2rem;
+    background-color: var(--color-border);
+    margin-top: 3rem;
+    text-align: center;
+}
+
+.reviews-section h2 {
+    font-size: 2rem;
+    color: var(--color-black);
+    margin-bottom: 2rem;
+}
+
+.review {
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    padding: 1.5rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    text-align: left;
+}
+
+.review img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    float: left;
+    margin-right: 1rem;
+}
+
+.review blockquote {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
+    color: var(--color-black);
+}
+
+.review::before {
+    content: '\f10d';
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    font-size: 24px;
+    color: var(--color-green);
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+.review-author {
+    font-weight: bold;
+    margin-top: 1rem;
+    color: var(--color-black);
+}
+
+.Annonce {
+    white-space: nowrap; /* Empêche le texte de se casser sur plusieurs lignes */
+    overflow: hidden;    /* Masque le texte qui dépasse les limites du conteneur */
+    width: 100%;         /* Largeur maximale de l'élément */
+    box-sizing: border-box;
+}
+
+.Annonce a {
+    font-weight: bold;
+}
+
+
+@keyframes scrollAnnonce {
+    0% {
+        transform: translateX(100%); /* Début du texte en dehors de l'écran */
+    }
+    100% {
+        transform: translateX(-100%); /* Le texte défile jusqu'à la fin de l'écran */
+    }
+}
+
+.Annonce {
+    display: inline-block;
+    animation: scrollAnnonce 30s linear infinite; /* Animation infinie */
+}
+
+
+
+
+
+
+.full-header {
+    width: 100%;
+    background-color: var(--color-green);
+    padding: 10px 0; /* Diminue la hauteur du header */
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.header-content {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    color: white;
+}
+
+.header-logo img {
+    height: 40px; /* Ajuste la taille du logo */
+    margin-right: 10px; /* Espace entre le logo et le texte */
+}
+
+.header-item {
+    display: flex;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    font-size: 16px;
+    position: relative;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-around;
+    width: 90%;
+    margin-top: 10px;
+}
+
+.header-item i {
+    margin-right: 8px; /* Espace entre l'icône et le texte */
+    font-size: 18px;
+}
+
+.header-item span {
+    font-size: 14px;
+}
+
+/* Correction du compteur du panier */
+.header-item .cart-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+@media screen and (min-width: 780px) {
+    .full-header {
+        display: flex;
+    }
+}
+
+@media screen and (max-width: 780px) {
+    .full-header {
+        display: none;
+    }
+}
+
+
+
+
+/* Afficher le header pour les écrans inférieurs à 780px */
+@media screen and (max-width: 780px) {
+    .classi-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 20px;
+    }
+}
+
+/* Pour les écrans supérieurs à 780px, cacher le header */
+@media screen and (min-width: 781px) {
+    .classi-header {
+        display: none;
+    }
+}
+
+
+/* Media Query: Si l'écran dépasse 780px */
+@media (min-width: 780px) {
+    footer {
+        top: 0; /* Déplace le footer en haut de la page */
+        bottom: auto; /* Supprime l'ancrage en bas */
+    }
+    main{
+        padding:155px;
+    }
+}
+
+
+
+</style>

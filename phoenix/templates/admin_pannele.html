@@ -1,0 +1,270 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panneau d'Administration</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="header-logo">
+            <img src="{% static 'logo.png' %}" alt="Logo" class="logo">
+            <span class="company-name" style="color: var(--color-green);">Rc Beauty</span>
+        </div>
+    </header>
+    <main class="admin-panel" style="margin-bottom: 85px;">
+        <h1>Panneau d'Administration</h1>
+        <a href="{% url 'ajouter_produit' %}" class="btn">Ajouter un Produit</a>
+        <a href="{% url 'ajouter_article' %}" class="btn">Ajouter un Article Blog</a>
+        <a href="{% url 'ajouter_categorie' %}" class="btn">Ajouter une Catégorie</a>
+        <a href="{% url 'ajouter_pays' %}" class="btn">Ajouter un Pays</a>
+
+        <h2>Produits</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Description</th>
+                    <th>Prix Commercial</th>
+                    <th>Prix Partenaire</th>
+                    <th>Origine</th>
+                    <th>Image</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for produit in produits %}
+                <tr>
+                    <td>{{ produit.id }}</td>
+                    <td><input type="text" value="{{ produit.nom }}" /></td>
+                    <td><textarea>{{ produit.description }}</textarea></td>
+                    <td><input type="number" value="{{ produit.prix_commercial }}">{{ produit.prix_commercial }}</td>
+                    <td><input type="number" value="{{ produit.prix_partenaire }}">{{ produit.prix_partenaire }}</td>
+                    <td><input type="text" value="{{ produit.origine.nom }}" /></td>
+                    <td><img src="{{ produit.image.url }}" alt="{{ produit.nom }}" width="100" /></td>
+                    <td class="actions">
+                    <form action="{% url 'supprimer_produit' produit.id %}" method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer ce produit ?');">
+                        {% csrf_token %}
+                        <button type="submit">Supprimer</button>
+                    </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Articles de Blog</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Titre</th>
+                    <th>Catégorie</th>
+                    <th>Description</th>
+                    <th>Image</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article in articles %}
+                <tr>
+                    <td>{{ article.id }}</td>
+                    <td><input type="text" value="{{ article.titre }}" /></td>
+                    <td><input type="text" value="{{ article.categorie.nom }}" /></td>
+                    <td><textarea>{{ article.description }}</textarea></td>
+                    <td><img src="{{ article.image.url }}" alt="{{ article.titre }}" width="100" /></td>
+                    <td class="actions">
+                    <form action="{% url 'supprimer_article_blog' article.id %}" method="POST" onsubmit="return confirm('Voulez-vous vraiment supprimer cet article de blog ?');">
+                        {% csrf_token %}
+                        <button type="submit">Supprimer</button>
+                    </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Profils</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Numéro WhatsApp</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profil in profils %}
+                <tr>
+                    <td>{{ profil.id }}</td>
+                    <td>{{ profil.nom }}</td>
+                    <td>{{ profil.prenom }}</td>
+                    <td>{{ profil.numero_whatsapp }}</td>
+                    <td class="actions">
+                        <!-- Ajouter des actions si nécessaire -->
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h2>Avis</h2>
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Note</th>
+                    <th>Commentaire</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for avis in avis %}
+                <tr>
+                    <td>{{ avis.id }}</td>
+                    <td>{{ avis.profil.nom }}</td>
+                    <td>{{ avis.profil.prenom }}</td>
+                    <td>{{ avis.note }}</td>
+                    <td>{{ avis.commentaire }}</td>
+                    <td>{{ avis.date_creation }}</td>
+                    <td class="actions">
+                        <!-- Ajouter des actions si nécessaire -->
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+</body>
+</html>
+
+<style>
+:root {
+    --color-green: #e6bd49;
+    --color-border:  #010101;
+    --color-black: #010101;
+    --banner-text-color:  #010101;
+    --banner-overlay-color: rgba(0, 0, 0, 0.5);
+    --footer-bg-color: #000;
+    --footer-text-color: #fff;
+} 
+body {
+    font-family: Arial, sans-serif;
+    color: var(--color-text);
+    background-color: var(--color-background);
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: var(--color-green);
+    padding: 1rem;
+    text-align: center;
+}
+
+main {
+    padding: 2rem;
+}
+
+h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.admin-actions {
+    margin-bottom: 1rem;
+}
+
+.btn {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    margin-right: 1rem;
+    background-color: var(--color-green);
+    color: var(--color-btn-text);
+    text-decoration: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: var(--color-btn-hover-bg);
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 2rem;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 1rem;
+    border: 1px solid var(--color-green);
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: var(--color-green);
+    font-weight: bold;
+}
+
+.admin-table tr:nth-child(even) {
+    background-color: var(--color-table-row-bg);
+}
+
+.admin-table tr:nth-child(odd) {
+    background-color: var(--color-table-row-alt-bg);
+}
+
+.admin-table input[type="text"],
+.admin-table input[type="number"],
+.admin-table textarea {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.admin-table img {
+    max-width: 100px;
+    height: auto;
+}
+
+.actions {
+    text-align: center;
+}
+
+.actions a {
+    color: var(--color-primary);
+    text-decoration: none;
+    margin: 0 0.5rem;
+}
+
+.actions a.edit {
+    font-weight: bold;
+}
+
+.actions a.delete {
+    color: red;
+}
+
+</style>
+</html>

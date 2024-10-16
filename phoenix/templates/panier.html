@@ -1,0 +1,667 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Votre Entreprise</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+
+ <header class="classi-header">
+        <div class="header-logo">
+            <img src="{% static 'logo.png' %}" alt="Logo" class="logo">
+            <span style="font-weight:bold;">Rc Beauty</span>
+        </div>
+        <a href="{% url 'blog_posts' %}" class="footer-item" style="position: absolute; right: 2%; color: var(--color-green);">
+            <i class="fas fa-blog"></i>
+            <span style="font-weight:bold;">Blog</span>
+        </a>
+    </header>
+    <header class="full-header">
+    <div class="footer-container">
+        <a href="{% url 'home' %}" class="header-item">
+            <div class="header-logo">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="logo">
+            </div>
+            <span style="font-weight:bold;">Rc Beauty</span>
+        </a>
+        <a href="{% url 'home' %}" class="header-item">
+            <i class="fas fa-home"></i>
+            <span>Accueil</span>
+        </a>
+        <a href="{% url 'propos' %}" class="header-item">
+            <i class="fas fa-info"></i>
+            <span>À propos</span>
+        </a>
+        <a href="{% url 'produits_par_categorie' %}" class="header-item">
+                <i class="fas fa-store"></i>
+                <span>Boutique</span>
+        </a>
+        <a href="{% url 'blog_posts' %}" class="header-item">
+            <i class="fas fa-blog"></i>
+            <span>Blog</span>
+        </a>
+        <a href="{% url 'afficher_profil' %}" class="header-item">
+            <i class="fas fa-user"></i>
+            <span>Compte</span>
+        </a>
+    </div>
+</header>
+
+
+    {% block content %}
+      <main style="margin-bottom: 85px; margin-top:100px;">
+        <!-- Section Panier -->
+        <section class="cart-section">
+            <p class="Annonce" style="font-family:franklin; font-size:20px;">
+    <a style="color:blue; text-decoration:none;" href="{% url 'signup' %}">Inscrivez-vous</a> pour que nous soyons plus proche de vous...
+</p>
+            <h2>Mon Panier</h2>
+            {% for item in produits_panier %}
+                <div class="cart-item">
+                    <img src="{{ item.produit.image.url }}" alt="{{ item.produit.nom }}">
+                    <div class="item-details">
+                        <h3>{{ item.produit.nom }}</h3>
+                        <p>Quantité: {{ item.quantite }}</p>
+                        <p>Prix Unitaire: <span style="font-size: 10px; color: red; font-weight: 700;">fcfa</span>{{ item.prix_unitaire }}</p>
+                    </div>
+                    <div class="item-total">
+                        <p><span style="font-size: 10px; color: red; font-weight: 700;">fcfa</span>{{ item.total_produit }}</p>
+                    </div>
+
+                    <div class="item-actions">
+                        <a href="{% url 'supprimer_du_panier' item.produit.id %}" style="color: red;"><i class="fas fa-trash-alt"></i></a>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="cart-summary">
+                <p>Total Panier: <span>{{ total_panier }}<span style="font-size: 10px; color: red; font-weight: 700;">fcfa</span></span></p>
+            </div>
+        </section>
+
+        <!-- Formulaire Client -->
+        <section class="checkout-form-section">
+            <form id="orderForm">
+                <!-- Les champs du formulaire sont remplis avec les informations de l'utilisateur -->
+                <input type="hidden" id="nom" name="nom" value="{{ profil.nom }}" required>
+                <input type="hidden" id="prenom" name="prenom" value="{{ profil.prenom }}" required>
+                <input type="hidden" id="numero_whatsapp" name="numero_whatsapp" value="+{{ profil.pays.code }}{{ profil.numero_whatsapp }}" required>
+                <input type="hidden" id="ville" name="ville" value="{{ profil.pays.nom }}" required>
+
+                <!-- Les informations des produits du panier -->
+                {% for item in produits_panier %}
+                    <input type="hidden" name="product_{{ forloop.counter }}" value="{{ item.produit.nom }} - Quantité: {{ item.quantite }} - Prix: {{ item.prix_unitaire }} fcfa">
+                {% endfor %}
+                <input type="hidden" name="total_price" value="{{ total_panier }}">
+
+                <button type="submit" class="pay-button"><i class="fab fa-whatsapp"></i> Commande WhatsApp</button>
+            </form>
+
+        </section>
+    </main>
+    <script>
+        document.getElementById('orderForm').addEventListener('submit', function(event) {
+            event.preventDefault();  // Empêche la soumission immédiate pour permettre le traitement
+
+            const form = document.getElementById('orderForm');
+            const formData = new FormData(form);
+
+            // Construire le message WhatsApp
+            let message = `Bonjour! ${formData.get('nom')} ${formData.get('prenom')}\n`;
+            message += `${formData.get('numero_whatsapp')}\n`;
+            message += ` ${formData.get('ville')}\n\n`;
+
+            message += `certains de vos articles m'interessent: \n`;
+            {% for item in produits_panier %}
+                message += `- {{ item.produit.nom }} (Quantité: {{ item.quantite }}) - {{ item.description }} -{{ item.prix_unitaire }} fcfa\n`;
+            {% endfor %}
+
+            message += `\nPrix total: {{ total_panier }} fcfa`;
+
+            // URL encodée pour WhatsApp
+            const whatsappUrl = `https://wa.me/22657106949?text=` + encodeURIComponent(message);
+
+            // Redirection vers WhatsApp
+            window.open(whatsappUrl, '_blank');
+        });
+    </script>
+    {% endblock %}
+
+
+
+  <!-- Bouton Discuter dans le coin inférieur gauche -->
+    <div class="chat-button" id="chatButton">
+        <i class="fas fa-comments"></i> Discuter
+    </div>
+
+    <!-- Boîte de dialogue instantané -->
+    <div class="chat-box" id="chatBox">
+        <div class="chat-header">
+            Rc Beauty--Numéro : +226 57-10-69-49
+        </div>
+        <div class="chat-messages">
+            <div class="message bot">
+                Bienvenue chez Rc Beauty, que pouvons-nous pour vous ?
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="chatInput" placeholder="Votre message ici...">
+            <button id="sendMessage"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+
+    <footer>
+        <div class="footer-container">
+            <a href="{% url 'home' %}" class="footer-item">
+                <i class="fas fa-home"></i>
+                <span>Accueil</span>
+            </a>
+            <a href="{% url 'propos' %}" class="footer-item">
+            <i class="fas fa-info"></i>
+            <span>à propos</span>
+            </a>
+            <a href="{% url 'produits_par_categorie' %}" class="footer-item">
+                <i class="fas fa-store"></i>
+                <span>Boutique</span>
+            </a>
+            <a href="{% url 'afficher_profil' %}" class="footer-item">
+                <i class="fas fa-user"></i>
+                <span>Compte</span>
+            </a>
+        </div>
+    </footer>
+</body>
+</html>
+<style>
+:root {
+    --color-green: #e6bd49;
+    --color-border:  #010101;
+    --color-black: #010101;
+    --banner-text-color:  #010101;
+    --banner-overlay-color: rgba(0, 0, 0, 0.5);
+    --footer-bg-color: #000;
+    --footer-text-color: #010101;
+}
+
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    color: var(--color-black);
+}
+
+header {
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.header-logo .logo {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background-color: var(--banner-text-color);
+}
+
+.header-logo .logo {
+    width: 40px;
+    height: 40px;
+}
+
+.header-logo .company-name {
+    font-size: 18px;
+    margin-left: 10px;
+    font-weight: bold;
+}
+.cart-section {
+    background-color: rgba(255, 255, 255, 0.8); /* Fond semi-transparent blanc */
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.cart-section h2 {
+    font-size: 24px;
+    color: var(--color-black);
+    margin-bottom: 20px;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid var(--color-border);
+}
+p{
+    color: var(--color-green);
+}
+
+.cart-item:last-of-type {
+    border-bottom: none; /* Enlever la bordure pour le dernier élément */
+}
+
+.cart-item img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    margin-right: 15px;
+    border-radius: 5px;
+}
+
+.item-details {
+    flex: 1;
+}
+
+.item-details h3 {
+    font-size: 18px;
+    margin: 0 0 5px;
+}
+
+.item-details p {
+    margin: 5px 0;
+}
+
+.item-total {
+    font-weight: bold;
+    text-align: right;
+}
+
+.cart-summary {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: right;
+}
+
+.cart-summary span {
+    color: var(--color-green);
+}
+
+.checkout-form-section {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    margin: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-form-section h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+}
+
+.pay-button {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    background-color: var(--color-green);
+    color: #fff;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: center;
+}
+
+.pay-button:hover {
+    background-color: red;
+}
+
+a{
+    text-decoration: none;
+    color: var(--banner-text-color);
+}
+
+
+
+/* Style du bouton Discuter */
+.chat-button {
+    position: fixed;
+    bottom: 60px;
+    left: 20px;
+    background-color: #28a745;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    z-index: 100;
+    animation: bounce 0.3s infinite;
+}
+
+/* Animation de rebond */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Boîte de chat cachée par défaut */
+.chat-box {
+    display: none;
+    position: fixed;
+    bottom: 75px;
+    left: 20px;
+    width: 320px;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    z-index: 200;
+}
+
+/* En-tête de la boîte de chat */
+/* En-tête de la boîte de chat */
+.chat-header {
+    background-color: #28a745;
+    color: white;
+    padding: 10px;
+    border-radius: 10px 10px 0 0;
+    font-size: 14px;
+    text-align: center;
+    font-weight:bold;
+}
+
+/* Conteneur des messages */
+.chat-messages {
+    padding: 15px;
+    height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Style des messages */
+.message {
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 80%;
+    font-size: 14px;
+}
+
+.message.bot {
+    background-color: #f0f0f0;
+    align-self: flex-start;
+}
+
+.message.user {
+    background-color: #d4edda;
+    align-self: flex-end;
+}
+
+/* Style de l'input */
+.chat-input-container {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+}
+
+#chatInput {
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+}
+
+#sendMessage {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.Annonce a {
+    font-weight: bold;
+}
+
+
+@keyframes scrollAnnonce {
+    0% {
+        transform: translateX(100%); /* Début du texte en dehors de l'écran */
+    }
+    100% {
+        transform: translateX(-100%); /* Le texte défile jusqu'à la fin de l'écran */
+    }
+}
+
+.Annonce {
+    display: inline-block;
+    animation: scrollAnnonce 20s linear infinite; /* Animation infinie */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.full-header {
+    width: 100%;
+    background-color: var(--color-green);
+    padding: 10px 0; /* Diminue la hauteur du header */
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.header-content {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    color: white;
+}
+
+.header-logo img {
+    height: 40px; /* Ajuste la taille du logo */
+    margin-right: 10px; /* Espace entre le logo et le texte */
+}
+
+.header-item {
+    display: flex;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    font-size: 16px;
+    position: relative;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-around;
+    width: 90%;
+    margin-top: 10px;
+}
+
+.header-item i {
+    margin-right: 8px; /* Espace entre l'icône et le texte */
+    font-size: 18px;
+}
+
+.header-item span {
+    font-size: 14px;
+}
+
+/* Correction du compteur du panier */
+.header-item .cart-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+@media screen and (min-width: 780px) {
+    .full-header {
+        display: flex;
+    }
+}
+
+@media screen and (max-width: 780px) {
+    .full-header {
+        display: none;
+    }
+}
+
+
+
+
+/* Afficher le header pour les écrans inférieurs à 780px */
+@media screen and (max-width: 780px) {
+    .classi-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 20px;
+    }
+}
+
+/* Pour les écrans supérieurs à 780px, cacher le header */
+@media screen and (min-width: 781px) {
+    .classi-header {
+        display: none;
+    }
+}
+
+
+/* Media Query: Si l'écran dépasse 780px */
+@media (min-width: 780px) {
+    footer {
+        top: 0; /* Déplace le footer en haut de la page */
+        bottom: auto; /* Supprime l'ancrage en bas */
+    }
+}
+
+
+
+</style>
+
+
+<script>
+   document.addEventListener("DOMContentLoaded", () => {
+    const chatButton = document.getElementById("chatButton");
+    const chatBox = document.getElementById("chatBox");
+    const sendMessageButton = document.getElementById("sendMessage");
+    const chatInput = document.getElementById("chatInput");
+    const chatMessages = document.querySelector(".chat-messages");
+
+    // Afficher/Masquer la boîte de chat
+    chatButton.addEventListener("click", () => {
+        chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
+    });
+
+    // Envoyer un message
+    sendMessageButton.addEventListener("click", () => {
+        const userMessage = chatInput.value.trim();
+
+        if (userMessage !== "") {
+            // Ajouter le message de l'utilisateur
+            const userMessageElement = document.createElement("div");
+            userMessageElement.classList.add("message", "user");
+            userMessageElement.innerText = userMessage;
+            chatMessages.appendChild(userMessageElement);
+
+            // Ajouter les coches de confirmation
+            const vvIcon = document.createElement("span");
+            const checkIcon = document.createElement("i"); // Crée l'icône pour les coches de confirmation
+
+            // Définir l'icône de confirmation (une coche simple)
+            checkIcon.classList.add("fas", "fa-check");
+
+            // Ajouter une deuxième coche pour confirmation de lecture
+            const doubleCheckIcon = document.createElement("i");
+            doubleCheckIcon.classList.add("fas", "fa-check-double");
+
+            // Styliser les icônes
+            vvIcon.style.fontSize = "12px";
+            vvIcon.style.marginLeft = "5px";
+
+            // Ajouter les icônes au message de l'utilisateur (affiche deux coches)
+            vvIcon.appendChild(checkIcon); // Ajoute la coche simple
+            vvIcon.appendChild(doubleCheckIcon); // Ajoute la deuxième coche (lecture)
+            userMessageElement.appendChild(vvIcon);
+
+
+            // Ajouter une réponse automatique après un délai
+            setTimeout(() => {
+                const botMessageElement = document.createElement("div");
+                botMessageElement.classList.add("message", "bot");
+                botMessageElement.innerText = "Merci de nous avoir contacté, cette fonctionnalité est bientôt disponible.";
+                chatMessages.appendChild(botMessageElement);
+
+                // Fermer le chat après 3 secondes
+                setTimeout(() => {
+                    chatBox.style.display = "none";
+                }, 15000);
+            }, 1000);
+
+            // Effacer l'input
+            chatInput.value = "";
+        }
+    });
+});
+
+</script>
+
+

@@ -1,0 +1,670 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Marketplace</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <header class="classi-header">
+        <div class="header-logo">
+            <img src="{% static 'logo.png' %}" alt="Logo" class="logo">
+            <span style="font-weight:bold;">Rc Beauty</span>
+        </div>
+        <a href="{% url 'blog_posts' %}" class="footer-item" style="position: absolute; right: 2%; color: var(--color-green);">
+            <i class="fas fa-blog"></i>
+            <span style="font-weight:bold;">Blog</span>
+        </a>
+    </header>
+    <header class="full-header">
+    <div class="footer-container">
+        <a href="{% url 'home' %}" class="header-item">
+            <div class="header-logo">
+                <img src="{% static 'logo.png' %}" alt="Logo" class="logo">
+            </div>
+            <span style="font-weight:bold;">Rc Beauty</span>
+        </a>
+        <a href="{% url 'home' %}" class="header-item">
+            <i class="fas fa-home"></i>
+            <span>Accueil</span>
+        </a>
+        <a href="{% url 'propos' %}" class="header-item">
+            <i class="fas fa-info"></i>
+            <span>À propos</span>
+        </a>
+        <a href="{% url 'afficher_panier' %}" class="header-item">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count">{{ nombre_produits_panier }}</span>
+            <span>Panier</span>
+        </a>
+        <a href="{% url 'blog_posts' %}" class="header-item">
+            <i class="fas fa-blog"></i>
+            <span>Blog</span>
+        </a>
+        <a href="{% url 'afficher_profil' %}" class="header-item">
+            <i class="fas fa-user"></i>
+            <span>Compte</span>
+        </a>
+    </div>
+</header>
+
+
+<main style="margin-bottom: 85px; margin-top:100px;">
+        <!-- Section des filtres de catégorie -->
+<div class="filter-container">
+    <select class="filter-dropdown" onchange="filterItems(this.value)">
+        <option value="all">Catégorie</option>
+        {% for categorie in produits_par_categorie.keys %}
+            <option value="{{ categorie.nom }}">{{ categorie.nom }}</option>
+        {% endfor %}
+    </select>
+</div>
+    <p class="Annonce" style="font-family:franklin; font-size:20px;">
+    <a style="color:blue; text-decoration:none;" href="{% url 'signup' %}">Inscrivez-vous</a> pour que nous soyons plus proche de vous...
+</p>
+    {% if messages %}
+        <div class="messages" style="color: rgb(245, 5, 45); font-size: 30px;">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="categories">
+        <!-- Icône de la main pour scroller -->
+        <!-- Indicateur de scroll horizontal avec deux flèches -->
+        <div id="scroll-indicator">
+            <i class="fas fa-arrow-left"></i>
+            <i class="fas fa-arrow-right"></i>
+        </div>
+        <style>
+            #scroll-indicator {
+    position: fixed;
+    bottom: 55%; /* Positionné en bas de la fenêtre */
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: bold;
+    font-size: 70px;
+    color: black; /* Flèches noires légèrement transparentes */
+    opacity: 0; /* Par défaut, les flèches sont invisibles */
+    pointer-events: none; /* Ne pas interférer avec les clics */
+    display: flex;
+    gap: 30px;
+    z-index: 1000; /* Pour s'assurer qu'elles apparaissent au-dessus des autres éléments */
+}
+
+@keyframes slide-left-right {
+    0% { transform: translateX(-50%) translateX(-60px); }
+    50% { transform: translateX(-50%) translateX(60px); }
+    100% { transform: translateX(-50%) translateX(-60px); }
+}
+
+/* Montre les flèches avec une animation */
+.show-arrows {
+    opacity: 1;
+    animation: slide-left-right 5s ease-in-out infinite; /* Animation continue de gauche à droite */
+}
+
+        </style>
+<script>
+    function showScrollArrows() {
+        const scrollIndicator = document.getElementById('scroll-indicator');
+        scrollIndicator.classList.add('show-arrows');  // Affiche les flèches
+        scrollIndicator.style.opacity = 1; // S'assure que les flèches sont visibles
+
+        // Clignote les flèches 3 fois pendant 4 secondes
+        let blinkCount = 0;
+        const blinkInterval = setInterval(() => {
+            scrollIndicator.style.opacity = scrollIndicator.style.opacity === '1' ? '0' : '1';
+            blinkCount++;
+            if (blinkCount === 6) { // 6 clignotements (3 fois)
+                clearInterval(blinkInterval);
+                scrollIndicator.style.opacity = 0; // Les flèches disparaissent
+            }
+        }, 500); // Clignote toutes les 500ms
+
+        // Réaffiche les flèches après 30 secondes
+        setTimeout(() => {
+            showScrollArrows();
+        }, 30000); // Réapparaît après 30 secondes
+    }
+
+    // Appelle la fonction au chargement de la page
+    window.onload = showScrollArrows; // Appel immédiat au chargement de la page
+</script>
+
+
+
+
+        {% for categorie, produits in produits_par_categorie.items %}
+            <div class="category-slider" style="margin-bottom:20px;">
+                <div class="product-grid" data-category="{{ categorie.nom }}">
+                    {% for produit in produits %}
+                    <h2 class="color:black;" style="display: none;">{{ categorie.nom }}</h2>
+                        <div class="product">
+                            <a href="{% url 'produit_detail' produit.id %}"><img src="{{ produit.image.url }}" alt="{{ produit.nom }}"></a>
+                            <span class="product-name"style="font-weight:bold;">{{ produit.nom }}</span>
+                            <span class="product-name">
+                                {{ produit.description|slice:":90" }}...
+                            </span>
+                            <br>
+                             <span class="product-price">{{ produit.prix_commercial }} <span style="font-size: 10px; color: red; font-weight: 700;">fcfa</span></span>
+                             <br>
+                            <a href="{% url 'ajouter_au_panier' produit.id %}" class="add-to-cart" style="margin-bottom:10px;"><i class="fas fa-shopping-cart" style="text-decoration: none;"></i> Ajouter</a>
+                            <a href="#" class="add-to-cart" id="whatsapp-order"><i class="fab fa-whatsapp" style="text-decoration: none;"></i>Commander</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</main>
+
+<script>
+    // Filtrer les produits par catégorie
+    function filterItems(category) {
+        const productGrids = document.querySelectorAll('.product-grid');
+
+        productGrids.forEach(grid => {
+            if (category === 'all' || grid.getAttribute('data-category') === category) {
+                grid.style.display = 'flex'; // Affiche la grille de produits
+            } else {
+                grid.style.display = 'none'; // Cache les autres produits
+            }
+        });
+    }
+
+    // WhatsApp Order
+    document.querySelectorAll('#whatsapp-order').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            const productElement = this.closest('.product');
+            const productName = productElement.querySelector('.product-name').innerText;
+            const productPrice = productElement.querySelector('.product-price').innerText;
+
+            let message = `Bonjour! Je souhaite commander le produit suivant:\n`;
+            message += `- Produit: ${productName}\n`;
+            message += `- Prix: ${productPrice}\n`;
+
+            const whatsappUrl = `https://wa.me/22657106949?text=` + encodeURIComponent(message);
+            window.open(whatsappUrl, '_blank');
+        });
+    });
+</script>
+
+
+  <!-- Bouton Discuter dans le coin inférieur gauche -->
+    <div class="chat-button" id="chatButton">
+        <i class="fas fa-comments"></i> Discuter
+    </div>
+
+    <!-- Boîte de dialogue instantané -->
+    <div class="chat-box" id="chatBox">
+        <div class="chat-header">
+            Rc Beauty--Numéro : +226 57-10-69-49
+        </div>
+        <div class="chat-messages">
+            <div class="message bot">
+                Bienvenue chez Rc Beauty, que pouvons-nous pour vous ?
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" id="chatInput" placeholder="Votre message ici...">
+            <button id="sendMessage"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+<footer>
+    <div class="footer-container">
+        <a href="{% url 'home' %}" class="footer-item">
+            <i class="fas fa-home"></i>
+            <span>Accueil</span>
+        </a>
+        <a href="{% url 'propos' %}" class="footer-item">
+            <i class="fas fa-info"></i>
+            <span>à propos</span>
+        </a>
+        <a href="{% url 'afficher_panier' %}" class="footer-item">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="cart-count" style="color: red; margin: 0 ; padding: 0; font-weight: 800; position: absolute; top: 2%; font-size: 16px;">{{ nombre_produits_panier }}</span>
+            <span>Panier</span>
+        </a>
+        <a href="{% url 'afficher_profil' %}" class="footer-item">
+            <i class="fas fa-user"></i>
+            <span>Compte</span>
+        </a>
+    </div>
+</footer>
+
+</body>
+</html>
+
+<style>
+
+:root {
+    --color-green: #e6bd49;
+    --color-border:  #010101;
+    --color-black: #010101;
+    --banner-text-color:  #010101;
+    --banner-overlay-color: rgba(0, 0, 0, 0.5);
+    --footer-bg-color: #000;
+    --footer-text-color: #fff;
+}
+
+
+    a{
+    text-decoration: none;
+    color: var(--banner-text-color);
+}
+
+.header-logo .logo {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    background-color: var(--banner-text-color);
+}
+
+.product-grid {
+    display: flex;
+    overflow-x: auto; /* Permet le scroll horizontal */
+    overflow-y: hidden; /* Empêche le scroll vertical */
+    scroll-behavior: smooth; /* Pour un scroll fluide */
+    gap: 20px; /* Espacement entre les produits */
+}
+
+
+
+.product {
+    flex: 0 0 16%; /* Quatre produits par ligne */
+    box-sizing: border-box;
+    padding: 10px; /* Ajoute un espacement autour des produits */
+}
+
+@media (max-width: 768px) {
+    .product {
+        flex: 0 0 50%; /* Deux produits par ligne sur les écrans moyens */
+    }
+}
+
+@media (max-width: 480px) {
+    .product {
+        flex: 0 0 43%; /* Un produit par ligne sur les petits écrans */
+    }
+}
+.filter-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.filter-dropdown {
+    padding: 10px 20px;
+    background-color:green;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    margin: 5px;
+    font-size: 16px;
+    font-weight:bold;
+}
+
+.filter-dropdown option {
+    background-color: white;
+    color: black;
+    font-weight:bold;
+}
+
+#scroll-hint {
+    position: fixed;
+    top: 50%;
+    right: 10px;
+    font-size: 80px;
+    color: rgba(0, 0, 0, 0.2); /* Main noire transparente */
+    opacity: 0; /* L'icône est invisible par défaut */
+    pointer-events: none; /* Évite d'interférer avec d'autres éléments */
+    animation: none; /* Pas d'animation par défaut */
+}
+
+@keyframes slide-right-left {
+    0% { right: 10px; }
+    100% { right: 90%; }
+}
+
+/* Apparition et disparition progressives */
+.show-hint {
+    opacity: 1;
+    animation: slide-right-left 2s ease-in-out infinite alternate;
+}
+
+
+/* Apparition progressive de l'icône */
+.show-hint {
+    opacity: 1;
+}
+
+
+/* Style du bouton Discuter */
+.chat-button {
+    position: fixed;
+    bottom: 60px;
+    left: 20px;
+    background-color: #28a745;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    z-index: 100;
+    animation: bounce 0.3s infinite;
+}
+
+/* Animation de rebond */
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* Boîte de chat cachée par défaut */
+.chat-box {
+    display: none;
+    position: fixed;
+    bottom: 75px;
+    left: 20px;
+    width: 320px;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    z-index: 200;
+}
+
+/* En-tête de la boîte de chat */
+.chat-header {
+    background-color: #28a745;
+    color: white;
+    padding: 10px;
+    border-radius: 10px 10px 0 0;
+    font-size: 14px;
+    text-align: center;
+    font-weight:bold;
+}
+
+/* Conteneur des messages */
+.chat-messages {
+    padding: 15px;
+    height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Style des messages */
+.message {
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 80%;
+    font-size: 14px;
+}
+
+.message.bot {
+    background-color: #f0f0f0;
+    align-self: flex-start;
+}
+
+.message.user {
+    background-color: #d4edda;
+    align-self: flex-end;
+}
+
+/* Style de l'input */
+.chat-input-container {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+}
+
+#chatInput {
+    flex-grow: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+}
+
+#sendMessage {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.Annonce {
+    white-space: nowrap; /* Empêche le texte de se casser sur plusieurs lignes */
+    overflow: hidden;    /* Masque le texte qui dépasse les limites du conteneur */
+    width: 100%;         /* Largeur maximale de l'élément */
+    box-sizing: border-box;
+}
+
+.Annonce a {
+    font-weight: bold;
+}
+
+
+@keyframes scrollAnnonce {
+    0% {
+        transform: translateX(100%); /* Début du texte en dehors de l'écran */
+    }
+    100% {
+        transform: translateX(-100%); /* Le texte défile jusqu'à la fin de l'écran */
+    }
+}
+
+.Annonce {
+    display: inline-block;
+    animation: scrollAnnonce 30s linear infinite; /* Animation infinie */
+}
+
+
+
+.full-header {
+    width: 100%;
+    background-color: var(--color-green);
+    padding: 10px 0; /* Diminue la hauteur du header */
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.header-content {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    color: white;
+}
+
+.header-logo img {
+    height: 40px; /* Ajuste la taille du logo */
+    margin-right: 10px; /* Espace entre le logo et le texte */
+}
+
+.header-item {
+    display: flex;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    padding: 5px 10px;
+    font-size: 16px;
+    position: relative;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-around;
+    width: 90%;
+    margin-top: 10px;
+}
+
+.header-item i {
+    margin-right: 8px; /* Espace entre l'icône et le texte */
+    font-size: 18px;
+}
+
+.header-item span {
+    font-size: 14px;
+}
+
+/* Correction du compteur du panier */
+.header-item .cart-count {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+@media screen and (min-width: 780px) {
+    .full-header {
+        display: flex;
+    }
+}
+
+@media screen and (max-width: 780px) {
+    .full-header {
+        display: none;
+    }
+}
+
+
+
+
+/* Afficher le header pour les écrans inférieurs à 780px */
+@media screen and (max-width: 780px) {
+    .classi-header {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 20px;
+    }
+}
+
+/* Pour les écrans supérieurs à 780px, cacher le header */
+@media screen and (min-width: 781px) {
+    .classi-header {
+        display: none;
+    }
+}
+
+
+/* Media Query: Si l'écran dépasse 780px */
+@media (min-width: 780px) {
+    footer {
+        top: 0; /* Déplace le footer en haut de la page */
+        bottom: auto; /* Supprime l'ancrage en bas */
+    }
+}
+
+
+
+</style>
+
+
+<script>
+   document.addEventListener("DOMContentLoaded", () => {
+    const chatButton = document.getElementById("chatButton");
+    const chatBox = document.getElementById("chatBox");
+    const sendMessageButton = document.getElementById("sendMessage");
+    const chatInput = document.getElementById("chatInput");
+    const chatMessages = document.querySelector(".chat-messages");
+
+    // Afficher/Masquer la boîte de chat
+    chatButton.addEventListener("click", () => {
+        chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
+    });
+
+    // Envoyer un message
+    sendMessageButton.addEventListener("click", () => {
+        const userMessage = chatInput.value.trim();
+
+        if (userMessage !== "") {
+            // Ajouter le message de l'utilisateur
+            const userMessageElement = document.createElement("div");
+            userMessageElement.classList.add("message", "user");
+            userMessageElement.innerText = userMessage;
+            chatMessages.appendChild(userMessageElement);
+
+            // Ajouter les coches de confirmation
+            const vvIcon = document.createElement("span");
+            const checkIcon = document.createElement("i"); // Crée l'icône pour les coches de confirmation
+
+            // Définir l'icône de confirmation (une coche simple)
+            checkIcon.classList.add("fas", "fa-check");
+
+            // Ajouter une deuxième coche pour confirmation de lecture
+            const doubleCheckIcon = document.createElement("i");
+            doubleCheckIcon.classList.add("fas", "fa-check-double");
+
+            // Styliser les icônes
+            vvIcon.style.fontSize = "12px";
+            vvIcon.style.marginLeft = "5px";
+
+            // Ajouter les icônes au message de l'utilisateur (affiche deux coches)
+            vvIcon.appendChild(checkIcon); // Ajoute la coche simple
+            vvIcon.appendChild(doubleCheckIcon); // Ajoute la deuxième coche (lecture)
+            userMessageElement.appendChild(vvIcon);
+
+
+            // Ajouter une réponse automatique après un délai
+            setTimeout(() => {
+                const botMessageElement = document.createElement("div");
+                botMessageElement.classList.add("message", "bot");
+                botMessageElement.innerText = "Merci de nous avoir contacté, cette fonctionnalité est bientôt disponible.";
+                chatMessages.appendChild(botMessageElement);
+
+                // Fermer le chat après 3 secondes
+                setTimeout(() => {
+                    chatBox.style.display = "none";
+                }, 15000);
+            }, 1000);
+
+            // Effacer l'input
+            chatInput.value = "";
+        }
+    });
+});
+
+</script>
+
+
